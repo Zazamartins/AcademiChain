@@ -36,6 +36,6 @@ npx hardhat compile
 ```
 
 ## Equipe
-Isaac Martins de Oliveira Braga e Sousa
-Lara Rodrigues Barros
-Felipe Marinho de Carvalho
+* Isaac Martins de Oliveira Braga e Sousa
+* Lara Rodrigues Barros
+* Felipe Marinho de Carvalho
