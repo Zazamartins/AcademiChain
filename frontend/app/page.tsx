@@ -1,13 +1,14 @@
 'use client';
 
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { ShieldCheck, UploadCloud, FileSearch, CalendarDays, Wallet, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react';
 // Certifique-se de que o caminho para o seu blockchain.js está correto
 import { connectWallet, getContractInstance } from '../blockchain';
 
 export default function Home() {
+  // === ESTADOS DO COMPONENTE ===
+  const [mounted, setMounted] = useState(false); // <--- A MÁGICA CONTRA O HYDRATION ERROR AQUI
   const [account, setAccount] = useState('');
   const [contract, setContract] = useState(null);
   const [activeTab, setActiveTab] = useState('emitir'); // 'emitir' ou 'verificar'
@@ -16,6 +17,11 @@ export default function Home() {
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
   const [verifyResult, setVerifyResult] = useState(null);
+
+  // Garante que a interface só processe coisas do navegador (como a carteira) após carregar a página
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Função para conectar carteira (usada no botão do header)
   const handleConnect = async () => {
@@ -51,7 +57,7 @@ export default function Home() {
     reader.readAsArrayBuffer(file);
   };
 
-// FLUXO 1: Registrar (Apenas Emissores)
+  // FLUXO 1: Registrar (Apenas Emissores)
   const registerDoc = async () => {
     if (!contract || !currentHash) {
       return setStatus('❌ Erro: Conecte a carteira e selecione um arquivo.');
@@ -142,7 +148,7 @@ export default function Home() {
       
       <div className="max-w-5xl mx-auto pt-32 pb-16 px-6 flex flex-col items-center">
         
-        {/* Sessão de Título e Abas (Padrão da Imagem) */}
+        {/* Sessão de Título e Abas */}
         <div className="text-center mb-12">
           <h2 className="text-5xl font-extrabold text-white tracking-tighter mb-4">
             Cartório Digital Descentralizado
@@ -152,7 +158,7 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Navegação por Abas (Sleek design) */}
+        {/* Navegação por Abas */}
         <div className="flex p-1.5 bg-slate-900 rounded-full border border-slate-800 mb-10 w-full max-w-sm shadow-inner">
           <button 
             onClick={() => { setActiveTab('emitir'); setVerifyResult(null); setCurrentHash(''); setFileName(''); setStatus(''); }}
@@ -170,10 +176,9 @@ export default function Home() {
           </button>
         </div>
 
-        {/* CONTEÚDO PRINCIPAL (Cartão Único Robusto) */}
+        {/* CONTEÚDO PRINCIPAL */}
         <div className="w-full bg-slate-900 rounded-3xl border border-slate-800 p-10 shadow-2xl">
           
-          {/* Título da Seção Dinâmico */}
           <div className="flex items-center gap-4 mb-8 pb-6 border-b border-slate-800">
             {activeTab === 'emitir' ? 
               <UploadCloud className="w-10 h-10 text-blue-400" /> : 
@@ -189,7 +194,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Area de Upload (Visual Clean) */}
+          {/* Area de Upload */}
           <div className="mb-8 group">
             <label className="block text-sm font-semibold text-slate-300 mb-3">
               Arquivo Original
@@ -198,6 +203,7 @@ export default function Home() {
               <input 
                 type="file" 
                 onChange={processFile} 
+                onClick={(e) => { e.target.value = null }}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               />
               <UploadCloud className="w-12 h-12 text-slate-600 mx-auto mb-4 group-hover:text-blue-500 transition-colors" />
@@ -208,7 +214,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Display do Hash (Se gerado) */}
+          {/* Display do Hash */}
           {currentHash && (
             <div className="mb-8 p-5 bg-slate-950 rounded-xl border border-slate-800 shadow-inner">
               <div className="flex items-center justify-between mb-2">
@@ -219,10 +225,10 @@ export default function Home() {
             </div>
           )}
 
-          {/* Botão de Ação Robusto */}
+          {/* Botão de Ação Robusto COM PROTEÇÃO CONTRA HYDRATION ERROR */}
           <button 
             onClick={activeTab === 'emitir' ? registerDoc : verifyDoc}
-            disabled={!currentHash || loading || !contract}
+            disabled={!mounted || !currentHash || loading || !contract}
             className={`w-full flex items-center justify-center gap-3 py-4 rounded-xl font-extrabold text-lg text-white transition-all shadow-lg active:scale-95 ${loading ? 'bg-slate-700' : 'bg-blue-600 hover:bg-blue-500'} disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             {loading ? (
@@ -234,14 +240,14 @@ export default function Home() {
             )}
           </button>
 
-          {/* Área de Status e Resultados (UI Robusta) */}
+          {/* Área de Status */}
           {status && !verifyResult && (
             <div className="mt-8 p-4 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-center text-slate-300">
               {status}
             </div>
           )}
 
-          {/* Resultado da Verificação (Padrão Institutional) */}
+          {/* Resultado da Verificação */}
           {verifyResult && (
             <div className={`mt-8 p-6 rounded-2xl border transition-all ${verifyResult.status === 'valid' ? 'bg-emerald-950/30 border-emerald-800/50' : 'bg-red-950/30 border-red-800/50'}`}>
               <div className="flex items-center gap-4 mb-5">
